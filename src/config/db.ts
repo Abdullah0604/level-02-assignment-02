@@ -6,7 +6,6 @@ export const pool = new Pool({
 });
 
 export const initDB = async () => {
-  /*
   await pool.query(`
         CREATE TABLE IF NOT EXISTS users(
         id SERIAL PRIMARY KEY,
@@ -17,7 +16,7 @@ export const initDB = async () => {
         role VARCHAR(50) NOT NULL
         )
         `);
-        */
+
   await pool.query(`
         CREATE TABLE IF NOT EXISTS vehicles(
         id SERIAL PRIMARY KEY,

@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { initDB, pool } from "./config/db";
 import { vehiclesRoutes } from "./modules/vehicles/vehicles.routes";
+import { userRoutes } from "./modules/users/user.routes";
 
 const app = express();
 const port = 5000;
@@ -10,6 +11,8 @@ app.use(express.json());
 initDB();
 
 app.use("/api/v1/vehicles", vehiclesRoutes);
+
+app.use("/api/v1/users", userRoutes);
 
 app.get("/", (_, res) => {
   res.status(200).json({
