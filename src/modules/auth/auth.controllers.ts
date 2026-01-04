@@ -42,37 +42,31 @@ const signinUser = async (req: Request, res: Response) => {
 
     console.log(result);
     if (!result) {
-      return res.status(401).send(
-        JSON.stringify({
-          success: false,
-          message: "Invalid credentials",
-          errors:
-            result === null
-              ? "Your email is invalid, Please provide the correct email."
-              : "Your password is incorrect. Please provide your correct password",
-        })
-      );
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+        errors:
+          result === null
+            ? "Your email is invalid, Please provide the correct email."
+            : "Your password is incorrect. Please provide your correct password",
+      });
     }
 
-    return res.status(200).send(
-      JSON.stringify({
-        success: true,
-        message: "Login successful",
-        data: {
-          token: result.token,
-          user: result.user,
-        },
-      })
-    );
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      data: {
+        token: result.token,
+        user: result.user,
+      },
+    });
   } catch (error: any) {
     console.log(error);
-    res.status(500).send(
-      JSON.stringify({
-        success: false,
-        message: "Failed to Login",
-        errors: error.message,
-      })
-    );
+    res.status(500).json({
+      success: false,
+      message: "Failed to Login",
+      errors: error.message,
+    });
   }
 };
 

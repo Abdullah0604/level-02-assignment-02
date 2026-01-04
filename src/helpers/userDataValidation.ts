@@ -14,7 +14,7 @@ export const userDataValidation = (userData: Record<string, unknown>) => {
     }
   }
 
-  if (!password || typeof password === "string") {
+  if (!password || typeof password !== "string") {
     return (message =
       "Password is required. Please provide your password. And password must be a string.");
   } else {

@@ -66,7 +66,7 @@ const deleteUser = async (req: Request, res: Response) => {
     return res.status(400).json({
       success: false,
       message: "Invalid input",
-      errors: "Vehicle ID must be a number",
+      errors: "User ID must be a number",
     });
   }
   try {
