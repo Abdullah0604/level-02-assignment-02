@@ -18,10 +18,9 @@ const signupUserDB = async (payload: Record<string, unknown>) => {
 const signinUserDB = async (payload: Record<string, unknown>) => {
   const { email, password } = payload;
 
-  const result = await pool.query(
-    "SELECT * FROM users WHERE email = $1 RETURNING *",
-    [email]
-  );
+  const result = await pool.query("SELECT * FROM users WHERE email = $1 ", [
+    email,
+  ]);
 
   if (!result.rows.length) return null;
 
