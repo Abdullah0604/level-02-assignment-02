@@ -1,29 +1,40 @@
 export const userDataValidation = (userData: Record<string, unknown>) => {
   let message = "";
-  const { name, email, password, phone } = userData;
-
+  const { name, email, password, phone, role } = userData;
+  const roles = ["admin", "customer"];
   if (!name) {
-    message = "Name is required. Please Give your name";
+    return (message = "Name is required. Please provide your name");
   }
 
   if (!email) {
-    message = "Email is required. Please Give your email";
+    return (message = "Email is required. Please provide your email");
   } else {
     if (email !== (email as string).toLowerCase()) {
-      message = "All character of Email must be in lowercase.";
+      return (message = "All character of Email must be in lowercase.");
     }
   }
 
-  if (!password) {
-    message = "Password is required. Please Give your password";
+  if (!password || typeof password === "string") {
+    return (message =
+      "Password is required. Please provide your password. And password must be a string.");
   } else {
     if ((password as string).length < 6) {
-      message = "Password must be at least 6 character";
+      return (message = "Password must be at least 6 character");
     }
   }
 
   if (!phone) {
-    message = "Phone Number is required. Please Give your phone number";
+    return (message =
+      "Phone Number is required. Please provide your phone number");
+  }
+
+  if (!role) {
+    return (message =
+      "Role is required. Please provide your role and remember role can be either admin or customer.");
+  } else {
+    if (!roles.includes(role as string)) {
+      return (message = "role must be either admin or customer.");
+    }
   }
 
   return message;
