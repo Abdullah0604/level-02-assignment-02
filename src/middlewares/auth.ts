@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { config } from "../config";
+
 const auth = (...roles: ("admin" | "customer")[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -9,7 +10,7 @@ const auth = (...roles: ("admin" | "customer")[]) => {
         return res.status(401).json({
           success: false,
           message: "Unauthorized",
-          errors: "You are not allowed!!",
+          errors: "You are not allowed!! Please Login First or create account",
         });
       }
 
@@ -17,7 +18,7 @@ const auth = (...roles: ("admin" | "customer")[]) => {
         return res.status(401).json({
           success: false,
           message: "Unauthorized",
-          errors: "You are not allowed!!",
+          errors: "You are not allowed!! Please Login First or create account",
         });
       }
 

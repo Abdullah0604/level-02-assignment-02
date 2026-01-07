@@ -41,6 +41,31 @@ const createBooking = async (req: Request, res: Response) => {
   }
 };
 
+const getBookings = async (req: Request, res: Response) => {
+  try {
+    const result = await bookingServices.getBookingsDB(req.user!);
+    if (!result.rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: "no bookings found",
+        errors: "Bookings is not found!",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Bookings retrieved successfully",
+      data: result.rows,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Failed To create booking",
+      errors: error.message,
+    });
+  }
+};
 export const bookingControllers = {
   createBooking,
+  getBookings,
 };

@@ -50,15 +50,16 @@ const createBookingDB = async (payload: Record<string, unknown>) => {
   }
 };
 
-const getAllUserBookingsDB = async (payload: Record<string, unknown>) => {
+const getBookingsDB = async (payload: Record<string, unknown>) => {
+  const { id, role } = payload;
+  if (role === "customer") {
+    const result = await pool.query(
+      "SELECT * FROM bookings WHERE customer_id=$1",
+      [id]
+    );
+    return result;
+  }
   const result = await pool.query("SELECT * FROM bookings");
-  return result;
-};
-const getUserBookingsDB = async (customerID: string) => {
-  const result = await pool.query(
-    "SELECT * FROM bookings WHERE customer_id = $1 ",
-    [customerID]
-  );
   return result;
 };
 
@@ -69,7 +70,6 @@ const updateBookingDB = async (payload: Record<string, unknown>) => {
 
 export const bookingServices = {
   createBookingDB,
-  getAllUserBookingsDB,
-  getUserBookingsDB,
+  getBookingsDB,
   updateBookingDB,
 };
