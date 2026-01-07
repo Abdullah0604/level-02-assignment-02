@@ -27,7 +27,7 @@ export const initDB = async () => {
         availability_status VARCHAR(50) NOT NULL 
         )
         `);
-  /*
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS bookings(
         id SERIAL PRIMARY KEY,
@@ -40,5 +40,4 @@ export const initDB = async () => {
         
         )
         `);
-        */
 };
