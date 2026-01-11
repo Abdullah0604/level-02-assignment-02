@@ -77,19 +77,26 @@ const deleteVehicleDB = async (payload: string | number) => {
     "SELECT * FROM bookings WHERE vehicle_id=$1",
     [payload]
   );
+
   if (vehicleResult.rows.length) {
-    if (vehicleResult.rows[0].status === "active") {
-      return {
-        errorMessage:
-          "Vehicle with this id is already booked and booking is in active.",
-      };
+    if (vehicleResult.rows[0].status !== "active") {
+      const result = await pool.query(
+        `DELETE FROM vehicles WHERE id= $1 RETURNING *`,
+        [payload]
+      );
+      return result;
     }
+    return {
+      errorMessage:
+        "Vehicle with this id is already booked and booking is in active.",
+    };
   }
+
+  // if there is no booking with that id, that means the vehicle is now available
   const result = await pool.query(
     `DELETE FROM vehicles WHERE id= $1 RETURNING *`,
     [payload]
   );
-
   return result;
 };
 
