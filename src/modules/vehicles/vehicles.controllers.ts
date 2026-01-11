@@ -16,7 +16,7 @@ const createVehicle = async (req: Request, res: Response) => {
     const result = await vehicleServices.createVehicleDB(req.body);
 
     console.log("create vehicle:  ", result);
-    if (result.rows[0]) {
+    if (result.rows.length) {
       res.status(201).json({
         success: true,
         message: "Vehicle created successfully",
@@ -118,6 +118,7 @@ const updateVehicle = async (req: Request, res: Response) => {
     });
 
     console.log("updated vechile: ", result);
+
     if (result.rows.length) {
       res.status(200).json({
         success: true,
@@ -144,9 +145,18 @@ const deleteVehicle = async (req: Request, res: Response) => {
     });
   }
   try {
-    const result = await vehicleServices.deleteVehicleDB(req.params.vehicleId!);
+    const result: any = await vehicleServices.deleteVehicleDB(
+      req.params.vehicleId!
+    );
 
     console.log("deleted vehicle: ", result);
+    if (result.errorMessage) {
+      return res.status(400).json({
+        success: false,
+        message: "Bad request",
+        errors: result.errorMessage,
+      });
+    }
     if (!result.rowCount) {
       return res.status(404).json({
         success: false,
@@ -157,7 +167,6 @@ const deleteVehicle = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       message: "Vehicle deleted successfully",
-      data: result.rows[0],
     });
   } catch (error: any) {
     console.log(error);

@@ -64,8 +64,75 @@ const getBookingsDB = async (payload: Record<string, unknown>) => {
 };
 
 const updateBookingDB = async (payload: Record<string, unknown>) => {
-  //   const result =
-  //   return result
+  const { status, bookingId, role } = payload;
+
+  const bookingResult = await pool.query(
+    "SELECT * FROM bookings WHERE id = $1",
+    [bookingId]
+  );
+  const booking = bookingResult.rows[0];
+  const bookingStartDate = new Date(booking.rent_start_date as string);
+  const now = new Date();
+
+  if (role === "customer") {
+    if ((status as string).toLowerCase() !== "cancelled") {
+      return {
+        errorMessage: "Customers can only cancel bookings",
+      };
+    }
+
+    if (bookingStartDate <= now) {
+      return {
+        errorMessage: "Booking cannot be cancelled after the start date",
+      };
+    }
+
+    const result = await pool.query(
+      "UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *",
+      [status, bookingId]
+    );
+    if (result.rows.length) {
+      await pool.query(
+        "UPDATE vehicles SET availability_status=$1 WHERE id=$2 RETURNING *",
+        ["available", booking.vehicle_id]
+      );
+    }
+    return result;
+  }
+
+  if ((status as string).toLowerCase() !== "returned") {
+    return {
+      errorMessage: "Admins can only mark bookings as returned",
+    };
+  }
+
+  const result = await pool.query(
+    "UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *",
+    [status, bookingId]
+  );
+
+  if (result.rows.length) {
+    await pool.query(
+      "UPDATE vehicles SET availability_status=$1 WHERE id=$2 RETURNING *",
+      ["available", booking.vehicle_id]
+    );
+    return result;
+  }
+};
+
+const systemAutoUpdateBooking = async () => {
+  const bookingUpdatedResult = await pool.query(
+    "UPDATE bookings SET status=$1 WHERE status = $2 AND rent_end_date < NOW() RETURNING vehicle_id",
+    ["returned", "active"]
+  );
+
+  if (bookingUpdatedResult.rows.length) {
+    const vehicleIds = bookingUpdatedResult.rows.map((r) => r.vehicle_id);
+    await pool.query(
+      "UPDATE vehicles SET availability_status=$1 WHERE id=ANY($2::int[])",
+      ["available", vehicleIds]
+    );
+  }
 };
 
 export const bookingServices = {

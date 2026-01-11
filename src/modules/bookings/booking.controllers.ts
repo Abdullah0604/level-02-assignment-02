@@ -65,7 +65,47 @@ const getBookings = async (req: Request, res: Response) => {
     });
   }
 };
+
+const updateBooking = async (req: Request, res: Response) => {
+  const bookingId = Number(req.params.bookingId);
+  if (Number.isNaN(bookingId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid input",
+      errors: "booking Id  must be a number",
+    });
+  }
+  try {
+    const result = await bookingServices.updateBookingDB({
+      ...req.body,
+      role: req.user!.role,
+      bookingId: req.params.bookingId,
+    });
+
+    console.log("updated booking: ", result);
+    if (!result.rows.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Failed to update booking!",
+        errors: result.errorMessage,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "booking updated successfully",
+      data: result.rows[0],
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update booking!",
+      errors: error.message,
+    });
+  }
+};
 export const bookingControllers = {
   createBooking,
   getBookings,
+  updateBooking,
 };

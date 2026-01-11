@@ -15,7 +15,7 @@ const signupUser = async (req: Request, res: Response) => {
   try {
     const result = await authServices.signupUserDB(req.body);
 
-    console.log("create user:  ", result);
+    // console.log("create user:  ", result);
     if (result.rows[0]) {
       res.status(201).json({
         success: true,
@@ -24,7 +24,7 @@ const signupUser = async (req: Request, res: Response) => {
       });
     }
   } catch (error: any) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({
       success: false,
       message: "Failed to register user!",
@@ -61,7 +61,7 @@ const signinUser = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({
       success: false,
       message: "Failed to Login",

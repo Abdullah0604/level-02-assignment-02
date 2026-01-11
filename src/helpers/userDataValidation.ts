@@ -15,10 +15,9 @@ export const userDataValidation = (userData: Record<string, unknown>) => {
   }
 
   if (!password) {
-    return (message =
-      "Password is required. Please provide your password. And password must be a string.");
+    return (message = "Password is required. Please provide your password.");
   } else {
-    if (password.toString().length < 6) {
+    if (!(password.toString().length >= 6)) {
       return (message = "Password must be at least 6 character");
     }
   }
