@@ -38,9 +38,13 @@ const updateUser = async (req: Request, res: Response) => {
     });
   }
   try {
-    const result = await userServices.updateUserDB({
+    const result: any = await userServices.updateUserDB({
       ...req.body,
       userId: req.params.userId,
+      user: {
+        role: req.user!.role,
+        id: req.user!.id,
+      },
     });
 
     console.log("updated user: ", result);

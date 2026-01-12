@@ -2,6 +2,7 @@ export const userDataValidation = (userData: Record<string, unknown>) => {
   let message = "";
   const { name, email, password, phone, role } = userData;
   const roles = ["admin", "customer"];
+
   if (!name) {
     return (message = "Name is required. Please provide your name");
   }

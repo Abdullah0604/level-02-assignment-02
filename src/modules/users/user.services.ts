@@ -1,5 +1,6 @@
 import { pool } from "../../config/db";
 
+type User = { role: string; id: number };
 const getUsersDB = async () => {
   const result = await pool.query(
     `SELECT id, name, email, phone, role FROM users`
@@ -9,7 +10,26 @@ const getUsersDB = async () => {
 };
 
 const updateUserDB = async (payload: Record<string, unknown>) => {
-  const { name, email, phone, role, userId } = payload;
+  const { name, email, phone, role, userId, user } = payload;
+
+  if ((user as User).role === "customer") {
+    const userResult = await pool.query("SELECT * FROM users WHERE id = $1", [
+      userId,
+    ]);
+
+    if (userResult.rows[0].id !== (user as User).id) {
+      return {
+        errorMessage: "User can update only users's own data",
+      };
+    }
+
+    if (role) {
+      return {
+        errorMessage: "Only admin can update user's role ",
+      };
+    }
+  }
+
   const result = await pool.query(
     `UPDATE users SET 
      name = COALESCE($1, name),
