@@ -6,28 +6,43 @@ const createBookingDB = async (payload: Record<string, unknown>) => {
   const startDate = new Date(rent_start_date as string);
   const endDate = new Date(rent_end_date as string);
 
+  const userResult = await pool.query("SELECT * FROM users WHERE id=$1", [
+    customer_id,
+  ]);
+
+  if (!userResult.rows.length) {
+    throw {
+      status: 404,
+      message: "No customer found with this customer id",
+    };
+  }
+
   const vehicleResult = await pool.query("SELECT * FROM vehicles WHERE id=$1", [
     vehicle_id,
   ]);
 
-  if (!vehicleResult.rowCount) {
-    return {
-      statusCode: 404,
-    };
-  }
-  if (vehicleResult.rows[0].availability_status === "booked") {
-    return {
-      statusCode: 400,
+  if (!vehicleResult.rows.length) {
+    throw {
+      status: 404,
+      message: "No vehicle found with this vehicle id",
     };
   }
 
-  console.log("vehicle results: ", vehicleResult);
-  //
+  if (vehicleResult.rows[0].availability_status === "booked") {
+    throw {
+      status: 400,
+      message: "Vehicle is already Booked",
+    };
+  }
+
+  // console.log("vehicle results: ", vehicleResult);
+
   const vehicle = vehicleResult.rows[0];
   const diffTime = endDate.getTime() - startDate.getTime();
   const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const totalCost = vehicle.daily_rent_price * totalDays;
   const status = "active";
+
   const result = await pool.query(
     `INSERT INTO bookings
        (customer_id ,
@@ -46,7 +61,13 @@ const createBookingDB = async (payload: Record<string, unknown>) => {
       vehicle_id,
     ]);
 
-    return result;
+    return {
+      booking: result.rows[0],
+      vehicle: {
+        vehicle_name: vehicleResult.rows[0].vehicle_name,
+        daily_rent_price: vehicleResult.rows[0].daily_rent_price,
+      },
+    };
   }
 };
 

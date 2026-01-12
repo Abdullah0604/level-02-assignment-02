@@ -1,6 +1,7 @@
 export const bookingDataValidation = (bookingData: Record<string, unknown>) => {
   const { customer_id, vehicle_id, rent_start_date, rent_end_date } =
     bookingData;
+
   const startDate = new Date(rent_start_date as string);
   const endDate = new Date(rent_end_date as string);
 
