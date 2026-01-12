@@ -42,6 +42,7 @@ const signinUserDB = async (payload: Record<string, unknown>) => {
     }
   );
 
+  delete user.password;
   return {
     token,
     user,

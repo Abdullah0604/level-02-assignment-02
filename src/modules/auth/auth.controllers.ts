@@ -7,11 +7,7 @@ import sendSuccess from "../../helpers/sendSuccess";
 const signupUser = async (req: Request, res: Response) => {
   const validatedMessage = userDataValidation(req.body);
   if (validatedMessage) {
-    return res.status(400).json({
-      success: false,
-      message: "Validation error",
-      errors: validatedMessage,
-    });
+    return sendError(res, 400, "Validation error", validatedMessage);
   }
 
   try {
@@ -45,33 +41,23 @@ const signinUser = async (req: Request, res: Response) => {
   try {
     const result = await authServices.signinUserDB(req.body);
 
-    console.log(result);
-    if (!result) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-        errors:
-          result === null
-            ? "Your email is invalid, Please provide the correct email."
-            : "Your password is incorrect. Please provide your correct password",
-      });
-    }
+    // console.log(result);
+    if (!result)
+      return sendError(
+        res,
+        401,
+        "Invalid credentials",
+        "Invalid email or password"
+      );
 
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: {
-        token: result.token,
-        user: result.user,
-      },
+    return sendSuccess(res, 200, "Login successful", {
+      token: result.token,
+      user: result.user,
     });
   } catch (error: any) {
     // console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to Login",
-      errors: error.message,
-    });
+
+    sendError(res, 500, "Failed to Login", error.message);
   }
 };
 
