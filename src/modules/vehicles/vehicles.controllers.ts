@@ -1,38 +1,44 @@
 import e, { Request, Response } from "express";
 import { vehicleDataValidation } from "../../helpers/vehicleDataValidation";
 import { vehicleServices } from "./vehicles.services";
+import sendError from "../../helpers/sendError";
+import sendSuccess from "../../helpers/sendSuccess";
 
 const createVehicle = async (req: Request, res: Response) => {
   const validatedMessage = vehicleDataValidation(req.body);
   if (validatedMessage) {
-    return res.status(400).json({
-      success: false,
-      message: "Validation error",
-      errors: validatedMessage,
-    });
+    return sendError(res, 400, "Validation error", validatedMessage);
   }
 
   try {
     const result = await vehicleServices.createVehicleDB(req.body);
 
-    console.log("create vehicle:  ", result);
-    if (result.rows.length) {
-      res.status(201).json({
-        success: true,
-        message: "Vehicle created successfully",
-        data: result.rows[0],
-      });
-    }
+    // console.log("create vehicle:  ", result);
+
+    return sendSuccess(
+      res,
+      201,
+      "Vehicle created successfully",
+      result.rows[0]
+    );
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to create vehicle!",
-      errors:
-        error.code == "23505"
-          ? "registration number must be unique. Please provide a unique registration number."
-          : error.message,
-    });
+    // console.log(error);
+
+    if (error.code === "23505") {
+      return sendError(
+        res,
+        400,
+        "Duplicate value",
+        "registration number must be unique. Please provide a unique registration number."
+      );
+    }
+
+    return sendError(
+      res,
+      500,
+      "Internal server error",
+      error.message || "Failed to create vehicle!"
+    );
   }
 };
 
@@ -40,76 +46,65 @@ const getVehicles = async (req: Request, res: Response) => {
   try {
     const result = await vehicleServices.getVehiclesDB();
 
-    console.log("all vehicles ", result);
-    if (result.rows.length) {
-      res.status(200).json({
-        success: true,
-        message: "Vehicles retrieved successfully",
-        data: result.rows,
-      });
-    } else {
-      res.status(200).json({
-        success: true,
-        message: "No vehicles found",
-        data: [],
-      });
+    // console.log("all vehicles ", result);
+    if (!result.rows.length) {
+      return sendSuccess(res, 200, "No vehicles found", []);
     }
+
+    return sendSuccess(
+      res,
+      200,
+      "Vehicles retrieved successfully",
+      result.rows
+    );
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to retrieve vehicles!",
-      errors: error.message,
-    });
+    sendError(res, 500, "Failed to retrieve vehicles!", error.message);
   }
 };
 
 const getSingleVehicle = async (req: Request, res: Response) => {
-  const vehicleId = Number(req.params.vehicleId);
-  if (Number.isNaN(vehicleId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid input",
-      errors: "Vehicle ID must be a number",
-    });
-  }
-
   try {
     const result = await vehicleServices.getSingleVehicleDB(
       req.params.vehicleId!
     );
 
-    console.log("single vehicle: ", result);
-    if (result.rows.length) {
-      return res.status(200).json({
-        success: true,
-        message: "Vehicle retrieved successfully",
-        data: result.rows[0],
-      });
-    } else {
-      return res.status(404).json({
-        success: false,
-        message: "No vehicle found",
-        errors: "No vehicle found with the given id ",
-      });
+    // console.log("single vehicle: ", result);
+    if (!result.rows.length) {
+      return sendError(
+        res,
+        404,
+        "No vehicle found",
+        "No vehicle found with the given id "
+      );
     }
+    return sendSuccess(
+      res,
+      200,
+      "Vehicle retrieved successfully",
+      result.rows[0]
+    );
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to retrieve vehicles!",
-      errors: error.message,
-    });
+    // console.log(error);
+    return sendError(
+      res,
+      500,
+      "Failed to retrieve vehicles!",
+      error.message || "Internal Server Error"
+    );
   }
 };
 
 const updateVehicle = async (req: Request, res: Response) => {
-  const vehicleId = Number(req.params.vehicleId);
-  if (Number.isNaN(vehicleId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid input",
-      errors: "Vehicle ID must be a number",
-    });
+  const { availability_status } = req.body;
+  const status = ["available", "booked"];
+
+  if (!status.includes(availability_status)) {
+    return sendError(
+      res,
+      400,
+      "Invalid input",
+      "availability_status will be exactly available or booked"
+    );
   }
   try {
     const result = await vehicleServices.updateVehicleDB({
@@ -117,64 +112,41 @@ const updateVehicle = async (req: Request, res: Response) => {
       vehicleId: req.params.vehicleId,
     });
 
-    console.log("updated vechile: ", result);
+    // console.log("updated vechile: ", result);
 
-    if (result.rows.length) {
-      res.status(200).json({
-        success: true,
-        message: "Vehicle updated successfully",
-        data: result.rows[0],
-      });
-    }
+    return sendSuccess(
+      res,
+      200,
+      "Vehicle updated successfully",
+      result.rows[0]
+    );
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to update vehicle!",
-      errors: error.message,
-    });
+    return sendError(
+      res,
+      error.status || 500,
+      "Failed to update vehicle!",
+      error.message || "Internal server error"
+    );
   }
 };
 
 const deleteVehicle = async (req: Request, res: Response) => {
-  const vehicleId = Number(req.params.vehicleId);
-  if (Number.isNaN(vehicleId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid input",
-      errors: "Vehicle ID must be a number",
-    });
-  }
   try {
-    const result: any = await vehicleServices.deleteVehicleDB(
-      req.params.vehicleId!
-    );
+    const result = await vehicleServices.deleteVehicleDB(req.params.vehicleId!);
 
     console.log("deleted vehicle: ", result);
-    if (result.errorMessage) {
-      return res.status(400).json({
-        success: false,
-        message: "Bad request",
-        errors: result.errorMessage,
-      });
-    }
-    if (!result.rowCount) {
-      return res.status(404).json({
-        success: false,
-        message: "Vechicle is not exist",
-        errors: "No vehicle exists with this id",
-      });
-    }
+
     return res.status(200).json({
       success: true,
       message: "Vehicle deleted successfully",
     });
   } catch (error: any) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete vehicle!",
-      errors: error.message,
-    });
+    return sendError(
+      res,
+      error.status || 500,
+      "Failed to delete vehicle!",
+      error.message || "Internal Server Error"
+    );
   }
 };
 

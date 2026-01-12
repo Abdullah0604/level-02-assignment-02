@@ -49,6 +49,19 @@ const updateVehicleDB = async (payload: Record<string, unknown>) => {
     availability_status,
     vehicleId,
   } = payload;
+
+  const vehicleResult = await pool.query(
+    "SELECT * FROM vehicles WHERE id = $1",
+    [vehicleId]
+  );
+
+  if (!vehicleResult.rows.length) {
+    throw {
+      status: 404,
+      message: "Vehicle is not found with this id",
+    };
+  }
+
   const result = await pool.query(
     `
     UPDATE vehicles SET
@@ -73,22 +86,30 @@ const updateVehicleDB = async (payload: Record<string, unknown>) => {
 };
 
 const deleteVehicleDB = async (payload: string | number) => {
-  const vehicleResult = await pool.query(
+  const vehicleResult = await pool.query("SELECT * FROM vehicles WHERE id=$1", [
+    payload,
+  ]);
+
+  if (!vehicleResult.rows.length) {
+    throw {
+      status: 404,
+      message: "No vehicle found with this id",
+    };
+  }
+
+  const vehicleBookingResult = await pool.query(
     "SELECT * FROM bookings WHERE vehicle_id=$1",
     [payload]
   );
 
-  if (vehicleResult.rows.length) {
-    if (vehicleResult.rows[0].status !== "active") {
-      const result = await pool.query(
-        `DELETE FROM vehicles WHERE id= $1 RETURNING *`,
-        [payload]
-      );
-      return result;
-    }
-    return {
-      errorMessage:
-        "Vehicle with this id is already booked and booking is in active.",
+  const hasActiveBooking = vehicleBookingResult.rows.some(
+    (r) => r.status === "active"
+  );
+
+  if (hasActiveBooking) {
+    throw {
+      status: 403,
+      message: "Vehicle has active bookings. Cannot delete vehicle",
     };
   }
 
