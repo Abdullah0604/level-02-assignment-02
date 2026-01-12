@@ -1,42 +1,23 @@
 import { Request, Response } from "express";
 import { userServices } from "./user.services";
+import sendSuccess from "../../helpers/sendSuccess";
+import sendError from "../../helpers/sendError";
 
 const getUsers = async (req: Request, res: Response) => {
   try {
     const result = await userServices.getUsersDB();
 
-    console.log("all users ", result);
-    if (result.rows.length) {
-      res.status(200).json({
-        success: true,
-        message: "Users retrieved successfully",
-        data: result.rows,
-      });
-    } else {
-      res.status(200).json({
-        success: true,
-        message: "No users found",
-        data: [],
-      });
+    // console.log("all users ", result);
+    if (!result.rows.length) {
+      return sendSuccess(res, 200, "No users found", []);
     }
+    return sendSuccess(res, 200, "Users retrieved successfully", result.rows);
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to retrieve users!",
-      errors: error.message,
-    });
+    sendError(res, 500, "Failed to retrieve users!", error.message);
   }
 };
 
 const updateUser = async (req: Request, res: Response) => {
-  const userId = Number(req.params.userId);
-  if (Number.isNaN(userId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid input",
-      errors: "User ID must be a number",
-    });
-  }
   try {
     const result: any = await userServices.updateUserDB({
       ...req.body,
@@ -48,53 +29,35 @@ const updateUser = async (req: Request, res: Response) => {
     });
 
     console.log("updated user: ", result);
-    if (result.rows.length) {
-      res.status(200).json({
-        success: true,
-        message: "User updated successfully",
-        data: result.rows[0],
-      });
-    }
+    return sendSuccess(res, 200, "User updated successfully", result.rows[0]);
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to update user!",
-      errors: error.message,
-    });
+    sendError(
+      res,
+      error.status || 500,
+      "Failed to update user!",
+      error.message || "Internal server error"
+    );
   }
 };
 
 const deleteUser = async (req: Request, res: Response) => {
-  const userId = Number(req.params.userId);
-  if (Number.isNaN(userId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid input",
-      errors: "User ID must be a number",
-    });
-  }
   try {
     const result = await userServices.deleteUserDB(req.params.userId!);
 
-    console.log("deleted user: ", result);
-    if (!result.rowCount) {
-      return res.status(404).json({
-        success: false,
-        message: "user is not exist",
-        errors: "No user exists with this id",
-      });
-    }
+    // console.log("deleted user: ", result);
+
     return res.status(200).json({
       success: true,
       message: "user deleted successfully",
     });
   } catch (error: any) {
     console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete user!",
-      errors: error.message,
-    });
+    sendError(
+      res,
+      error.status || 500,
+      "Failed to delete user!",
+      error.message || "Internal server error"
+    );
   }
 };
 

@@ -42,13 +42,14 @@ const signinUser = async (req: Request, res: Response) => {
     const result = await authServices.signinUserDB(req.body);
 
     // console.log(result);
-    if (!result)
+    if (!result) {
       return sendError(
         res,
         401,
         "Invalid credentials",
         "Invalid email or password"
       );
+    }
 
     return sendSuccess(res, 200, "Login successful", {
       token: result.token,

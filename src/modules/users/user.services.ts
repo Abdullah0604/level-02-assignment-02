@@ -12,24 +12,29 @@ const getUsersDB = async () => {
 const updateUserDB = async (payload: Record<string, unknown>) => {
   const { name, email, phone, role, userId, user } = payload;
 
-  if ((user as User).role === "customer") {
-    const userResult = await pool.query("SELECT * FROM users WHERE id = $1", [
-      userId,
-    ]);
+  const userResult = await pool.query("SELECT * FROM users WHERE id = $1", [
+    userId,
+  ]);
 
+  if (!userResult.rows.length) {
+    throw { status: 404, message: "User not found" };
+  }
+
+  if ((user as User).role === "customer") {
     if (userResult.rows[0].id !== (user as User).id) {
-      return {
-        errorMessage: "User can update only users's own data",
+      throw {
+        status: 403,
+        message: "Users can update only their own profile",
       };
     }
 
     if (role) {
-      return {
-        errorMessage: "Only admin can update user's role ",
+      throw {
+        status: 403,
+        message: "Only admin can update user role",
       };
     }
   }
-
   const result = await pool.query(
     `UPDATE users SET 
      name = COALESCE($1, name),
@@ -44,6 +49,30 @@ const updateUserDB = async (payload: Record<string, unknown>) => {
 };
 
 const deleteUserDB = async (userId: string | number) => {
+  const userResult = await pool.query("SELECT * FROM users WHERE id = $1", [
+    userId,
+  ]);
+
+  if (!userResult.rows.length) {
+    throw { status: 404, message: "User not found" };
+  }
+
+  const userBookingsResult = await pool.query(
+    "SELECT * FROM bookings WHERE customer_id = $1",
+    [userId]
+  );
+
+  const hasActiveBooking = userBookingsResult.rows.some(
+    (b) => b.status === "active"
+  );
+
+  if (hasActiveBooking) {
+    throw {
+      status: 403,
+      message: "User has active bookings. Cannot delete user",
+    };
+  }
+
   const result = await pool.query(`DELETE FROM users WHERE id=$1 RETURNING *`, [
     userId,
   ]);
