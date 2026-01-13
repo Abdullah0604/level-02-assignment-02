@@ -25,3 +25,17 @@ export const checkVehicleFields = (
     updatedVehicleStatus,
   ];
 };
+
+export const checkUserFields = (
+  payload: Record<string, unknown>,
+  user: Record<string, unknown>
+) => {
+  const { name, email, phone, role } = payload;
+
+  const updatedName = name ?? user.name;
+  const updatedEmail = email ?? user.email;
+  const updatedPhone = phone ?? user.phone;
+  const updatedRole = role ?? user.role;
+
+  return [updatedName, updatedEmail, updatedPhone, updatedRole];
+};

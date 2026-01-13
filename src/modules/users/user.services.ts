@@ -1,4 +1,5 @@
 import { pool } from "../../config/db";
+import { checkUserFields } from "../../helpers/checkOptionalFields";
 
 type User = { role: string; id: number };
 const getUsersDB = async () => {
@@ -37,11 +38,7 @@ const updateUserDB = async (payload: Record<string, unknown>) => {
   }
 
   const userData = userResult.rows[0];
-
-  const updatedName = name ?? userData.name;
-  const updatedEmail = email ?? userData.email;
-  const updatedPhone = phone ?? userData.phone;
-  const updatedRole = role ?? userData.role;
+  const updatedFields = checkUserFields(payload, userData);
 
   const result = await pool.query(
     `UPDATE users SET 
@@ -49,7 +46,7 @@ const updateUserDB = async (payload: Record<string, unknown>) => {
      email = $2, 
      phone = $3, 
      role = $4 WHERE id=$5 RETURNING *`,
-    [updatedName, updatedEmail, updatedPhone, updatedRole, userId]
+    [...updatedFields, userId]
   );
 
   delete result.rows[0].password;
