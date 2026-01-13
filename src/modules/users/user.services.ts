@@ -45,10 +45,10 @@ const updateUserDB = async (payload: Record<string, unknown>) => {
 
   const result = await pool.query(
     `UPDATE users SET 
-     name = $1, name,
-     email = $2, email,
-     phone = $3, phone,
-     role = $4, role WHERE id=$5 RETURNING *`,
+     name = $1, 
+     email = $2, 
+     phone = $3, 
+     role = $4 WHERE id=$5 RETURNING *`,
     [updatedName, updatedEmail, updatedPhone, updatedRole, userId]
   );
 

@@ -1,4 +1,5 @@
 import { pool } from "../../config/db";
+import { checkVehicleFields } from "../../helpers/checkOptionalFields";
 import { bookingServices } from "../bookings/booking.services";
 const createVehicleDB = async (payload: Record<string, unknown>) => {
   const {
@@ -65,25 +66,21 @@ const updateVehicleDB = async (payload: Record<string, unknown>) => {
     };
   }
 
+  const vehicle = vehicleResult.rows[0];
+  const updatedFields = checkVehicleFields(payload, vehicle);
+
   const result = await pool.query(
     `
     UPDATE vehicles SET
-      vehicle_name = COALESCE($1, vehicle_name),
-      type = COALESCE($2, type),
-      registration_number = COALESCE($3, registration_number),
-      daily_rent_price = COALESCE($4, daily_rent_price),
-      availability_status = COALESCE($5, availability_status)
+      vehicle_name = $1, 
+      type = $2, 
+      registration_number = $3, 
+      daily_rent_price = $4, 
+      availability_status = $5, 
       WHERE id = $6
       RETURNING *;
     `,
-    [
-      vehicle_name ?? null,
-      type ?? null,
-      registration_number ?? null,
-      daily_rent_price ?? null,
-      availability_status ?? null,
-      vehicleId,
-    ]
+    [...updatedFields, vehicleId]
   );
   return result;
 };
