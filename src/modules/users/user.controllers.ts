@@ -18,7 +18,18 @@ const getUsers = async (req: Request, res: Response) => {
 };
 
 const updateUser = async (req: Request, res: Response) => {
+  const { role } = req.body;
+  const roles = ["admin", "customer"];
+
   try {
+    if (role && !roles.includes(role)) {
+      return sendError(
+        res,
+        400,
+        "Failed to update user",
+        "Role must be either admin or customer"
+      );
+    }
     const result: any = await userServices.updateUserDB({
       ...req.body,
       userId: req.params.userId,
