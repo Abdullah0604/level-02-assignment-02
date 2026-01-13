@@ -50,7 +50,8 @@ const createBookingDB = async (payload: Record<string, unknown>) => {
         rent_start_date ,
         rent_end_date ,
         total_price  ,
-        status) VALUES( $1, $2, $3, $4, $5 , $6 ) RETURNING *
+        status) VALUES( $1, $2, $3, $4, $5 , $6 ) RETURNING  id ,customer_id, vehicle_id, rent_start_date::text, rent_end_date::text, total_price, status
+
         `,
     [customer_id, vehicle_id, rent_start_date, rent_end_date, totalCost, status]
   );
@@ -73,15 +74,101 @@ const createBookingDB = async (payload: Record<string, unknown>) => {
 
 const getBookingsDB = async (payload: Record<string, unknown>) => {
   const { id, role } = payload;
+
+  // for customer own bookings view
   if (role === "customer") {
     const result = await pool.query(
-      "SELECT * FROM bookings WHERE customer_id=$1",
+      `SELECT  id,
+       customer_id,
+       vehicle_id,
+       rent_start_date::text,
+       rent_end_date::text, total_price, status FROM bookings WHERE customer_id= $1`,
       [id]
     );
-    return result;
+
+    if (!result.rows.length) {
+      throw {
+        status: 200,
+        message: "No bookings found with this customer id",
+      };
+    }
+
+    const bookings = await Promise.all(
+      result.rows.map(async (booking) => {
+        const vehicleResult = await pool.query(
+          "SELECT * FROM vehicles WHERE id = $1",
+          [booking.vehicle_id]
+        );
+
+        if (!vehicleResult.rows.length)
+          return {
+            ...booking,
+            vehicle: {
+              message: "Vehicle Doesn't exists",
+            },
+          };
+
+        return {
+          ...booking,
+          vehicle: {
+            vehicle_name: vehicleResult.rows[0].vehicle_name,
+            registration_number: vehicleResult.rows[0].registration_number,
+            type: vehicleResult.rows[0].type,
+          },
+        };
+      })
+    );
+    return { bookings, message: "Your bookings retrieved successfully" };
   }
-  const result = await pool.query("SELECT * FROM bookings");
-  return result;
+
+  // for admin view
+  const result = await pool.query(`SELECT id,
+  customer_id,
+  vehicle_id,
+  rent_start_date::text,
+  rent_end_date::text, total_price, status FROM bookings`);
+
+  if (!result.rows.length) {
+    throw {
+      status: 200,
+      message: "No bookings found",
+    };
+  }
+
+  const bookings = await Promise.all(
+    result.rows.map(async (booking) => {
+      const userResult = await pool.query("SELECT * FROM users WHERE id = $1", [
+        booking.customer_id,
+      ]);
+
+      const vehicleResult = await pool.query(
+        "SELECT * FROM vehicles WHERE id = $1",
+        [booking.vehicle_id]
+      );
+
+      const customer = userResult.rows.length
+        ? { name: userResult.rows[0].name, email: userResult.rows[0].email }
+        : {
+            message: "Vehicle Doesn't exists",
+          };
+
+      const vehicle = vehicleResult.rows.length
+        ? {
+            vehicle_name: vehicleResult.rows[0].vehicle_name,
+            registration_number: vehicleResult.rows[0].registration_number,
+          }
+        : {
+            message: "Vehicle Doesn't exists",
+          };
+
+      return {
+        ...booking,
+        customer: customer,
+        vehicle: vehicle,
+      };
+    })
+  );
+  return { bookings, message: "Bookings retrieved successfully" };
 };
 
 const updateBookingDB = async (payload: Record<string, unknown>) => {

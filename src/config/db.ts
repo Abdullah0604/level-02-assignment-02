@@ -33,8 +33,8 @@ export const initDB = async () => {
         id SERIAL PRIMARY KEY,
         customer_id INT NOT NULL REFERENCES users(id),
         vehicle_id INT NOT NULL REFERENCES vehicles(id),
-        rent_start_date TIMESTAMP DEFAULT NOW() NOT NULL ,
-        rent_end_date TIMESTAMP DEFAULT NOW() NOT NULL ,
+        rent_start_date DATE NOT NULL,
+        rent_end_date DATE NOT NULL,
         total_price INT NOT NULL ,
         status VARCHAR(50) NOT NULL 
         

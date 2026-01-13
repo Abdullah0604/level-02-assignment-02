@@ -30,25 +30,19 @@ const createBooking = async (req: Request, res: Response) => {
 const getBookings = async (req: Request, res: Response) => {
   try {
     const result = await bookingServices.getBookingsDB(req.user!);
-    if (!result.rows.length) {
-      return res.status(404).json({
-        success: false,
-        message: "no bookings found",
-        errors: "Bookings is not found!",
-      });
+
+    return sendSuccess(res, 200, result.message, result.bookings);
+  } catch (error: any) {
+    if (error.status === 200) {
+      return sendSuccess(res, error.status, error.message, []);
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "Bookings retrieved successfully",
-      data: result.rows,
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: "Failed To create booking",
-      errors: error.message,
-    });
+    return sendError(
+      res,
+      error.status || 500,
+      "Failed To retrieved bookings",
+      error.message || "Internal Server Error"
+    );
   }
 };
 
