@@ -47,14 +47,6 @@ const getBookings = async (req: Request, res: Response) => {
 };
 
 const updateBooking = async (req: Request, res: Response) => {
-  const bookingId = Number(req.params.bookingId);
-  if (Number.isNaN(bookingId)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid input",
-      errors: "booking Id  must be a number",
-    });
-  }
   try {
     const result: any = await bookingServices.updateBookingDB({
       ...req.body,
@@ -62,26 +54,16 @@ const updateBooking = async (req: Request, res: Response) => {
       bookingId: req.params.bookingId,
     });
 
-    console.log("updated booking: ", result);
-    if (!result.rows.length) {
-      return res.status(400).json({
-        success: false,
-        message: "Failed to update booking!",
-        errors: result.errorMessage,
-      });
-    }
+    console.log("updated booking: ", result.updatedBooking);
 
-    return res.status(200).json({
-      success: true,
-      message: "booking updated successfully",
-      data: result.rows[0],
-    });
+    return sendSuccess(res, 200, result.message, result.updatedBooking);
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to update booking!",
-      errors: error.message,
-    });
+    return sendError(
+      res,
+      error.status || 500,
+      "Failed to update booking!",
+      error.message || "Internal Server Error"
+    );
   }
 };
 export const bookingControllers = {
