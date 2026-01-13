@@ -1,5 +1,20 @@
 import { pool } from "../../config/db";
 
+const systemAutoUpdateBooking = async () => {
+  const bookingUpdatedResult = await pool.query(
+    "UPDATE bookings SET status=$1 WHERE status = $2 AND rent_end_date < NOW() RETURNING vehicle_id",
+    ["returned", "active"]
+  );
+
+  if (bookingUpdatedResult.rows.length) {
+    const vehicleIds = bookingUpdatedResult.rows.map((r) => r.vehicle_id);
+    await pool.query(
+      "UPDATE vehicles SET availability_status=$1 WHERE id=ANY($2::int[])",
+      ["available", vehicleIds]
+    );
+  }
+};
+
 const createBookingDB = async (payload: Record<string, unknown>) => {
   const { customer_id, vehicle_id, rent_start_date, rent_end_date } = payload;
 
@@ -74,6 +89,9 @@ const createBookingDB = async (payload: Record<string, unknown>) => {
 
 const getBookingsDB = async (payload: Record<string, unknown>) => {
   const { id, role } = payload;
+
+  // system auto update after end the rent end date
+  systemAutoUpdateBooking();
 
   // for customer own bookings view
   if (role === "customer") {
@@ -275,23 +293,9 @@ const updateBookingDB = async (payload: Record<string, unknown>) => {
   }
 };
 
-const systemAutoUpdateBooking = async () => {
-  const bookingUpdatedResult = await pool.query(
-    "UPDATE bookings SET status=$1 WHERE status = $2 AND rent_end_date < NOW() RETURNING vehicle_id",
-    ["returned", "active"]
-  );
-
-  if (bookingUpdatedResult.rows.length) {
-    const vehicleIds = bookingUpdatedResult.rows.map((r) => r.vehicle_id);
-    await pool.query(
-      "UPDATE vehicles SET availability_status=$1 WHERE id=ANY($2::int[])",
-      ["available", vehicleIds]
-    );
-  }
-};
-
 export const bookingServices = {
   createBookingDB,
   getBookingsDB,
   updateBookingDB,
+  systemAutoUpdateBooking,
 };

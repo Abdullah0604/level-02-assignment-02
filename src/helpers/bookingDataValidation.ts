@@ -4,6 +4,7 @@ export const bookingDataValidation = (bookingData: Record<string, unknown>) => {
 
   const startDate = new Date(rent_start_date as string);
   const endDate = new Date(rent_end_date as string);
+  const today = new Date();
 
   if (!customer_id) {
     return "customer id is required. Please provide the customer id.";
@@ -21,6 +22,9 @@ export const bookingDataValidation = (bookingData: Record<string, unknown>) => {
     return "rent end date is required. Please provide rent end date.";
   }
 
+  if (startDate < new Date(today.toISOString().split("T")[0] as string)) {
+    return "Rent start date cannot be in the past.";
+  }
   if (startDate > endDate) {
     return "End date must be after start date";
   }

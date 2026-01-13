@@ -1,5 +1,5 @@
 import { pool } from "../../config/db";
-
+import { bookingServices } from "../bookings/booking.services";
 const createVehicleDB = async (payload: Record<string, unknown>) => {
   const {
     vehicle_name,
@@ -29,6 +29,9 @@ const createVehicleDB = async (payload: Record<string, unknown>) => {
 
 const getVehiclesDB = async () => {
   const result = await pool.query(`SELECT * FROM vehicles `);
+
+  // system auto update
+  bookingServices.systemAutoUpdateBooking();
   return result;
 };
 
