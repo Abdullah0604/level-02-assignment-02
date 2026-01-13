@@ -35,13 +35,21 @@ const updateUserDB = async (payload: Record<string, unknown>) => {
       };
     }
   }
+
+  const userData = userResult.rows[0];
+
+  const updatedName = name ?? userData.name;
+  const updatedEmail = email ?? userData.email;
+  const updatedPhone = phone ?? userData.phone;
+  const updatedRole = role ?? userData.role;
+
   const result = await pool.query(
     `UPDATE users SET 
-     name = COALESCE($1, name),
-     email = COALESCE($2, email),
-     phone = COALESCE($3, phone),
-     role = COALESCE($4, role) WHERE id=$5 RETURNING *`,
-    [name, email, phone, role, userId]
+     name = $1, name,
+     email = $2, email,
+     phone = $3, phone,
+     role = $4, role WHERE id=$5 RETURNING *`,
+    [updatedName, updatedEmail, updatedPhone, updatedRole, userId]
   );
 
   delete result.rows[0].password;
