@@ -95,10 +95,11 @@ const getSingleVehicle = async (req: Request, res: Response) => {
 };
 
 const updateVehicle = async (req: Request, res: Response) => {
-  const { availability_status } = req.body;
+  const { availability_status, type } = req.body;
   const status = ["available", "booked"];
+  const vehicleTypes = ["car", "bike", "van", "SUV"];
 
-  if (!status.includes(availability_status)) {
+  if (availability_status && !status.includes(availability_status)) {
     return sendError(
       res,
       400,
@@ -106,6 +107,16 @@ const updateVehicle = async (req: Request, res: Response) => {
       "availability_status will be exactly available or booked"
     );
   }
+
+  if (type && !vehicleTypes.includes(type)) {
+    return sendError(
+      res,
+      400,
+      "Invalid input",
+      `vehicle type will be exactly "car", "bike", "van", "SUV"`
+    );
+  }
+
   try {
     const result = await vehicleServices.updateVehicleDB({
       ...req.body,

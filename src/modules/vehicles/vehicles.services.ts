@@ -45,14 +45,7 @@ const getSingleVehicleDB = async (payload: string | number) => {
 };
 
 const updateVehicleDB = async (payload: Record<string, unknown>) => {
-  const {
-    vehicle_name,
-    type,
-    registration_number,
-    daily_rent_price,
-    availability_status,
-    vehicleId,
-  } = payload;
+  const { vehicleId } = payload;
 
   const vehicleResult = await pool.query(
     "SELECT * FROM vehicles WHERE id = $1",
@@ -76,9 +69,7 @@ const updateVehicleDB = async (payload: Record<string, unknown>) => {
       type = $2, 
       registration_number = $3, 
       daily_rent_price = $4, 
-      availability_status = $5, 
-      WHERE id = $6
-      RETURNING *;
+      availability_status = $5  WHERE id = $6  RETURNING *;
     `,
     [...updatedFields, vehicleId]
   );
