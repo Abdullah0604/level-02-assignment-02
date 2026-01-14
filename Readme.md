@@ -1,7 +1,7 @@
 # 🚗 Vehicle Rental System API
 
 🔗 **Live API URL:** https://level-02-assignment-02-one.vercel.app <br>
-📦 **API Base URL:** `/api/v1`
+📦 **API Base URL:** `https://level-02-assignment-02-one.vercel.app/api/v1`
 
 ---
 
@@ -9,42 +9,31 @@
 
 The Vehicle Rental System API allows users to rent vehicles efficiently while enabling administrators to manage vehicles, users, and bookings.
 
-### Core Capabilities
-
-- Vehicle inventory management with availability tracking
-- Customer account and profile management
-- Vehicle booking, cancellation, and return handling
-- Automatic rental cost calculation
-- Secure authentication with role-based access control (Admin & Customer)
-
----
-
 ## ✨ Features
 
-### 👤 Authentication & Authorization
+### 1. Authentication & Authorization
 
 - Secure user registration and login with JWT-based authentication
 - Passwords are hashed using bcrypt before database storage
 - Role-based access control (RBAC) implemented for Admin and Customer users
-- Middleware-protected routes requiring Bearer token authentication
 
-### 🚗 Vehicle Management (Admin)
+### 2. Vehicle Management (Admin)
 
 - Admin can create, update, view, and delete vehicles
 - Real-time vehicle availability tracking (`available`, `booked`)
-- Vehicle deletion is restricted if active bookings exist, ensuring data integrity
+- Vehicle deletion is restricted if active bookings exist
 
-### 📄 Booking Management
+### 3. Booking Management
 
 - Customers can book available vehicles with start and end date validation
 - Automatic rental cost calculation based on daily rate and rental duration
 - Customers can cancel bookings before the rental start date
 - Admin can mark bookings as returned, automatically updating vehicle availability
 - Role-based booking visibility:
-  -- Admin → all bookings
-  -- Customer → own bookings only
+  - Admin can view all bookings
+  - Customer can view own bookings only
 
-### 👥 User Management
+### 4. User Management
 
 - Admin can view and manage all user accounts
 - Customers can update only their own profile information
@@ -85,7 +74,7 @@ Create a .env file in the root directory and add the following:
 
 ```bash
     PORT=5000
-    CONNECTION_STR=postgresql://user:password@localhost:5432/vehicle_rental
+    CONNECTION_STR=your_postgresql_database_connection_string
     JWT_SECRET=your_jwt_secret
 ```
 
@@ -99,14 +88,14 @@ Create a .env file in the root directory and add the following:
 
 ## 📌 API Usage (Feature-wise Endpoints)
 
-### 🔐 Authentication
+### 1. Authentication
 
 - POST `/api/v1/auth/signup` — Register a new user
 - POST `/api/v1/auth/signin` — Login and receive JWT token
 
 ---
 
-### 🚗 Vehicle Management
+### 2. Vehicle Management
 
 - POST `/api/v1/vehicles` — Add a new vehicle (Admin only)
 - GET `/api/v1/vehicles` — Get all vehicles (Public)
@@ -116,7 +105,7 @@ Create a .env file in the root directory and add the following:
 
 ---
 
-### 📄 Booking Management
+### 3. Booking Management
 
 - POST `/api/v1/bookings` — Create a booking (Customer / Admin)
 - GET `/api/v1/bookings` — Get bookings
@@ -128,7 +117,7 @@ Create a .env file in the root directory and add the following:
 
 ---
 
-### 👤 User Management
+### 4. User Management
 
 - GET `/api/v1/users` — Get all users (Admin only)
 - PUT `/api/v1/users/:userId` — Update user profile (Admin / Own)
