@@ -64,9 +64,31 @@ The Vehicle Rental System API allows users to rent vehicles efficiently while en
 
 ## ⚙️ Setup & Usage
 
-### 1️⃣ Clone the repository
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/vehicle-rental-system.git
-cd vehicle-rental-system
+git clone https://github.com/Abdullah0604/level-02-assignment-02.git
+cd level-02-assignment-02
+```
+
+## 2. Install dependencies
+
+```bash
+    npm install
+```
+
+## 3. Environment Variables
+
+Create a .env file in the root directory and add the following:
+
+```bash
+    PORT=5000
+    CONNECTION_STR=postgresql://user:password@localhost:5432/vehicle_rental
+    JWT_SECRET=your_jwt_secret
+```
+
+## 4. Run The Application
+
+```bash
+    npm run dev
 ```
