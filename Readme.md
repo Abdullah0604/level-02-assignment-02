@@ -1,6 +1,6 @@
 # 🚗 Vehicle Rental System API
 
-🔗 **Live API URL:** https://level-02-assignment-02-one.vercel.app
+🔗 **Live API URL:** https://level-02-assignment-02-one.vercel.app <br>
 📦 **API Base URL:** `/api/v1`
 
 ---
@@ -23,30 +23,32 @@ The Vehicle Rental System API allows users to rent vehicles efficiently while en
 
 ### 👤 Authentication & Authorization
 
-- User registration and login using JWT
-- Password hashing with bcrypt
-- Role-based access control (Admin / Customer)
-- Protected routes using Bearer token authentication
+- Secure user registration and login with JWT-based authentication
+- Passwords are hashed using bcrypt before database storage
+- Role-based access control (RBAC) implemented for Admin and Customer users
+- Middleware-protected routes requiring Bearer token authentication
 
 ### 🚗 Vehicle Management (Admin)
 
-- Add, update, view, and delete vehicles
-- Track vehicle availability (`available`, `booked`)
-- Prevent deletion if active bookings exist
+- Admin can create, update, view, and delete vehicles
+- Real-time vehicle availability tracking (`available`, `booked`)
+- Vehicle deletion is restricted if active bookings exist, ensuring data integrity
 
 ### 📄 Booking Management
 
-- Create vehicle bookings with date validation
-- Automatic total price calculation
-- Cancel bookings before rental start date
-- Mark vehicles as returned and update availability
-- Role-based booking access (Admin: all, Customer: own only)
+- Customers can book available vehicles with start and end date validation
+- Automatic rental cost calculation based on daily rate and rental duration
+- Customers can cancel bookings before the rental start date
+- Admin can mark bookings as returned, automatically updating vehicle availability
+- Role-based booking visibility:
+  -- Admin → all bookings
+  -- Customer → own bookings only
 
 ### 👥 User Management
 
-- Admin can manage all users
-- Customers can update their own profile
-- Prevent deletion if active bookings exist
+- Admin can view and manage all user accounts
+- Customers can update only their own profile information
+- User deletion is restricted if active bookings exist
 
 ---
 
@@ -62,7 +64,7 @@ The Vehicle Rental System API allows users to rent vehicles efficiently while en
 
 ---
 
-## ⚙️ Setup & Usage
+## ⚙️ Setup
 
 ### 1. Clone the repository
 
@@ -92,3 +94,42 @@ Create a .env file in the root directory and add the following:
 ```bash
     npm run dev
 ```
+
+---
+
+## 📌 API Usage (Feature-wise Endpoints)
+
+### 🔐 Authentication
+
+- POST `/api/v1/auth/signup` — Register a new user
+- POST `/api/v1/auth/signin` — Login and receive JWT token
+
+---
+
+### 🚗 Vehicle Management
+
+- POST `/api/v1/vehicles` — Add a new vehicle (Admin only)
+- GET `/api/v1/vehicles` — Get all vehicles (Public)
+- GET `/api/v1/vehicles/:vehicleId` — Get vehicle details (Public)
+- PUT `/api/v1/vehicles/:vehicleId` — Update vehicle details (Admin only)
+- DELETE `/api/v1/vehicles/:vehicleId` — Delete vehicle (Admin only)
+
+---
+
+### 📄 Booking Management
+
+- POST `/api/v1/bookings` — Create a booking (Customer / Admin)
+- GET `/api/v1/bookings` — Get bookings
+  - Admin: all bookings
+  - Customer: own bookings only
+- PUT `/api/v1/bookings/:bookingId` — Update booking status
+  - Customer: cancel booking
+  - Admin: mark as returned
+
+---
+
+### 👤 User Management
+
+- GET `/api/v1/users` — Get all users (Admin only)
+- PUT `/api/v1/users/:userId` — Update user profile (Admin / Own)
+- DELETE `/api/v1/users/:userId` — Delete user (Admin only)
